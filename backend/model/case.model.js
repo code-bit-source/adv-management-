@@ -156,7 +156,7 @@ const caseSchema = new mongoose.Schema(
 );
 
 // Indexes for better query performance
-caseSchema.index({ caseNumber: 1 });
+// Note: caseNumber already has unique index from schema definition, no need to add again
 caseSchema.index({ client: 1, status: 1 });
 caseSchema.index({ advocate: 1, status: 1 });
 caseSchema.index({ paralegals: 1 });

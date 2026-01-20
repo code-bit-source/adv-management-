@@ -148,6 +148,7 @@ app.get("/", (req, res) => {
         getActivityById: "GET /api/activities/:id",
         deleteActivity: "DELETE /api/activities/:id (Admin only)"
       },
+      
       messages: {
         sendMessage: "POST /api/messages",
         getMessages: "GET /api/messages",
