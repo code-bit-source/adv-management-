@@ -1,5 +1,5 @@
 import express from 'express';
-import { signUp, logIn, logOut, googleLogin, googleSignup, setPassword } from '../controller/auth.controller.js';
+import { signUp, logIn, logOut, googleLogin, googleSignup, setPassword, changePassword } from '../controller/auth.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 
 const authRoute = express.Router();
@@ -11,7 +11,8 @@ authRoute.post("/logout", logOut);
 authRoute.post("/google/login", googleLogin);
 authRoute.post("/google/signup", googleSignup);
 
-// Protected route - Set password for Google users
+// Protected routes
 authRoute.post("/set-password", verifyToken, setPassword);
+authRoute.post("/change-password", verifyToken, changePassword);
 
 export default authRoute;

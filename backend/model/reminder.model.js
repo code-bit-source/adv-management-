@@ -344,7 +344,7 @@ reminderSchema.statics.createReminder = async function(data) {
     reminderDate,
     eventDate,
     recipients: recipients.map(r => ({
-      user: r.user || r,
+      user: typeof r === 'string' ? r : (r.user || r._id),
       status: 'pending'
     })),
     createdBy,
@@ -432,17 +432,31 @@ reminderSchema.statics.deleteOld = async function(days = 90) {
 // Validate reminder date before save
 reminderSchema.pre('save', function(next) {
   if (this.isNew && this.reminderDate < new Date()) {
-    return next(new Error('Reminder date must be in the future'));
+    const error = new Error('Reminder date must be in the future');
+    if (typeof next === 'function') {
+      return next(error);
+    } else {
+      throw error;
+    }
   }
-  next();
+  if (typeof next === 'function') {
+    next();
+  }
 });
 
 // Validate recurrence settings
 reminderSchema.pre('save', function(next) {
   if (this.isRecurring && !this.recurrence.frequency) {
-    return next(new Error('Recurrence frequency is required for recurring reminders'));
+    const error = new Error('Recurrence frequency is required for recurring reminders');
+    if (typeof next === 'function') {
+      return next(error);
+    } else {
+      throw error;
+    }
   }
-  next();
+  if (typeof next === 'function') {
+    next();
+  }
 });
 
 const Reminder = mongoose.model("Reminder", reminderSchema);

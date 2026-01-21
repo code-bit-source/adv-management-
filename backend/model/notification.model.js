@@ -512,7 +512,10 @@ function getNotificationDefaults(type) {
 notificationSchema.pre(/^find/, function(next) {
   // Exclude expired notifications from queries
   this.where({ $or: [{ expiresAt: { $exists: false } }, { expiresAt: { $gt: new Date() } }] });
-  next();
+  // Only call next if it's a function
+  if (typeof next === 'function') {
+    next();
+  }
 });
 
 const Notification = mongoose.model("Notification", notificationSchema);

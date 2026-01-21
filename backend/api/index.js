@@ -1,35 +1,68 @@
 import express from "express";
-import connectDb from "./config/db.js";
+import connectDb from "../config/db.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import authRoute from "./routes/auth.route.js";
-import protectedRoute from "./routes/protected.route.js";
-import noteRoute from "./routes/note.route.js";
-import connectionRoute from "./routes/connection.route.js";
-import caseRoute from "./routes/case.route.js";
-import timelineRoute from "./routes/timeline.route.js";
-import documentRoute from "./routes/document.route.js";
-import activityRoute from "./routes/activity.route.js";
-import messageRoute from "./routes/message.route.js";
-import notificationRoute from "./routes/notification.route.js";
-import reminderRoute from "./routes/reminder.route.js";
-import taskRoute from "./routes/task.route.js";
-import { startReminderScheduler } from "./services/reminderScheduler.js";
+import authRoute from "../routes/auth.route.js";
+import protectedRoute from "../routes/protected.route.js";
+import noteRoute from "../routes/note.route.js";
+import connectionRoute from "../routes/connection.route.js";
+import caseRoute from "../routes/case.route.js";
+import timelineRoute from "../routes/timeline.route.js";
+import documentRoute from "../routes/document.route.js";
+import activityRoute from "../routes/activity.route.js";
+import messageRoute from "../routes/message.route.js";
+import notificationRoute from "../routes/notification.route.js";
+import reminderRoute from "../routes/reminder.route.js";
+import taskRoute from "../routes/task.route.js";
 
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+
+// Connect to database once
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    console.log("Using existing database connection");
+    return;
+  }
+  
+  try {
+    await connectDb();
+    isConnected = true;
+  } catch (error) {
+    console.error("Failed to connect database:", error.message);
+    throw error;
+  }
+};
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-  origin: ["http://localhost:3000","https://the-court-case.vercel.app/", "http://localhost:3001"],
+  origin: [
+    "http://localhost:3000",
+    "https://the-court-case.vercel.app",
+    "http://localhost:3001"
+  ],
   credentials: true
 }));
+
+// Database connection middleware
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed"
+    });
+  }
+});
 
 // Routes
 app.use("/api/auth", authRoute);
@@ -37,7 +70,7 @@ app.use("/api/protected", protectedRoute);
 app.use("/api/notes", noteRoute);
 app.use("/api/connections", connectionRoute);
 app.use("/api/cases", caseRoute);
-app.use("/api", timelineRoute); // Timeline routes include /timeline and /hearings paths
+app.use("/api", timelineRoute);
 app.use("/api/documents", documentRoute);
 app.use("/api/activities", activityRoute);
 app.use("/api/messages", messageRoute);
@@ -49,8 +82,9 @@ app.use("/api/tasks", taskRoute);
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "Court Case Backend API is running",
+    message: "Court Case Backend API is running on Vercel",
     version: "1.0.0",
+    environment: "production",
     endpoints: {
       auth: {
         signup: "POST /api/auth/signup",
@@ -74,17 +108,7 @@ app.get("/", (req, res) => {
         getNoteById: "GET /api/notes/:id",
         updateNote: "PUT /api/notes/:id",
         deleteNote: "DELETE /api/notes/:id",
-        archiveNote: "PUT /api/notes/:id/archive",
-        uploadAttachment: "POST /api/notes/:id/attachments",
-        deleteAttachment: "DELETE /api/notes/:id/attachments/:attachmentId",
-        downloadAttachment: "GET /api/notes/:id/attachments/:attachmentId/download"
-      },
-      checklists: {
-        getChecklists: "GET /api/notes/:id/checklists",
-        addChecklistItem: "POST /api/notes/:id/checklists",
-        updateChecklistItem: "PUT /api/notes/:id/checklists/:checklistId",
-        toggleChecklistItem: "PUT /api/notes/:id/checklists/:checklistId/toggle",
-        deleteChecklistItem: "DELETE /api/notes/:id/checklists/:checklistId"
+        archiveNote: "PUT /api/notes/:id/archive"
       },
       connections: {
         searchAdvocates: "GET /api/connections/search/advocates",
@@ -127,17 +151,6 @@ app.get("/", (req, res) => {
         completeHearing: "PUT /api/hearings/:eventId/complete",
         postponeHearing: "PUT /api/hearings/:eventId/postpone"
       },
-      documents: {
-        uploadDocument: "POST /api/documents/upload",
-        getDocuments: "GET /api/documents",
-        getDocumentById: "GET /api/documents/:id",
-        downloadDocument: "GET /api/documents/:id/download",
-        updateDocument: "PUT /api/documents/:id",
-        updatePermissions: "PUT /api/documents/:id/permissions",
-        deleteDocument: "DELETE /api/documents/:id",
-        restoreDocument: "PUT /api/documents/:id/restore (Admin only)",
-        getStats: "GET /api/documents/stats"
-      },
       activities: {
         getCaseActivities: "GET /api/activities/cases/:caseId/activities",
         getCaseTimeline: "GET /api/activities/cases/:caseId/timeline",
@@ -148,7 +161,6 @@ app.get("/", (req, res) => {
         getActivityById: "GET /api/activities/:id",
         deleteActivity: "DELETE /api/activities/:id (Admin only)"
       },
-      
       messages: {
         sendMessage: "POST /api/messages",
         getMessages: "GET /api/messages",
@@ -159,7 +171,6 @@ app.get("/", (req, res) => {
         getMessageById: "GET /api/messages/:id",
         markAsRead: "PUT /api/messages/:id/read",
         deleteMessage: "DELETE /api/messages/:id",
-        uploadAttachment: "POST /api/messages/:id/attachments",
         getCaseMessages: "GET /api/messages/cases/:caseId/messages",
         getConnectionMessages: "GET /api/messages/connections/:connectionId/messages"
       },
@@ -202,7 +213,17 @@ app.get("/", (req, res) => {
         addComment: "POST /api/tasks/:id/comments",
         addAttachment: "POST /api/tasks/:id/attachments"
       }
-    }
+    },
+    note: "File uploads and reminder scheduler are temporarily disabled for Vercel deployment"
+  });
+});
+
+// API status endpoint
+app.get("/api", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is working",
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -224,34 +245,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
-const server = app.listen(port, async () => {
-  console.log(`✅ Server is running on: http://localhost:${port}`);
-  
-  // Connect to database
-  try {
-    await connectDb();
-  } catch (error) {
-    console.error("Failed to connect database:", error.message);
-  }
-  
-  // Start reminder scheduler
-  try {
-    startReminderScheduler();
-  } catch (error) {
-    console.error("Failed to start scheduler:", error.message);
-  }
-});
-
-// Error handlers for server
-server.on('error', (error) => {
-  console.error('Server error:', error);
-  if (error.code === 'EADDRINUSE') {
-    console.error(`Port ${port} is already in use`);
-  }
-  process.exit(1);
-});
-
-server.on('listening', () => {
-  console.log(`✅ Server socket is listening on port ${port}`);
-});
+// Export for Vercel serverless
+export default app;

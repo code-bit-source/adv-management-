@@ -1,8 +1,8 @@
 import Task from "../model/task.model.js";
 import Case from "../model/case.model.js";
 import User from "../model/user.model.js";
+import Reminder from "../model/reminder.model.js";
 import { createNotification } from "./notification.controller.js";
-import { createReminder } from "../controller/reminder.controller.js";
 import { logActivity } from "./activity.controller.js";
 
 // ==================== CREATE TASK ====================
@@ -89,20 +89,25 @@ export const createTask = async (req, res) => {
     reminderDate.setDate(reminderDate.getDate() - 1);
     
     if (reminderDate > new Date()) {
-      await createReminder({
-        title: 'Task Deadline Reminder',
-        message: `Task "${title}" is due tomorrow`,
-        type: 'task_reminder',
-        reminderDate,
-        eventDate: dueDate,
-        recipients: [{ user: assignedTo }],
-        createdBy: userId,
-        relatedEntity: {
+      try {
+        await Reminder.createReminder({
+          title: 'Task Deadline Reminder',
+          message: `Task "${title}" is due tomorrow`,
+          type: 'task_reminder',
+          reminderDate,
+          eventDate: dueDate,
+          recipients: [assignedTo],
+          createdBy: userId,
+          relatedEntity: {
           entityType: 'Task',
           entityId: task._id
         },
         priority: priority || 'normal'
       });
+      } catch (reminderError) {
+        console.error('Failed to create task reminder:', reminderError.message);
+        // Don't fail the entire task creation if reminder fails
+      }
     }
 
     // Log activity

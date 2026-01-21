@@ -444,9 +444,16 @@ taskSchema.statics.getTaskStats = async function(userId, role) {
 // Validate due date before save
 taskSchema.pre('save', function(next) {
   if (this.isNew && this.dueDate < new Date()) {
-    return next(new Error('Due date must be in the future'));
+    const error = new Error('Due date must be in the future');
+    if (typeof next === 'function') {
+      return next(error);
+    } else {
+      throw error;
+    }
   }
-  next();
+  if (typeof next === 'function') {
+    next();
+  }
 });
 
 const Task = mongoose.model("Task", taskSchema);
