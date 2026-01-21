@@ -512,4 +512,4 @@ export const sendReminderNotifications = async (reminder) => {
     
     return false;
   }
-};
+}; 
