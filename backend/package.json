@@ -5,12 +5,13 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "api/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "vercel-build": "echo 'Building for Vercel...'"
+    "vercel-build": "echo 'Building for Vercel...'",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.4",

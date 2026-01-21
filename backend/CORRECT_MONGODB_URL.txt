@@ -1,0 +1,51 @@
+# ✅ Your Correct MongoDB Connection String
+
+## For .env file (Local Development):
+
+MONGODB_URL=mongodb+srv://crazyhckrs_db_user:%40123456789@cluster0.seh8kea.mongodb.net/courtcase?retryWrites=true&w=majority
+
+
+## For Vercel Environment Variables:
+
+Variable Name: MONGODB_URL
+Value: mongodb+srv://crazyhckrs_db_user:%40123456789@cluster0.seh8kea.mongodb.net/courtcase?retryWrites=true&w=majority
+
+
+## Important Notes:
+
+1. Password '@123456789' is URL-encoded as '%40123456789'
+2. Database name 'courtcase' is added at the end (you can change this)
+3. Query parameters are included for better connection handling
+
+
+## Steps to Fix:
+
+### Local (.env file):
+1. Open .env file
+2. Replace MONGODB_URL with the string above
+3. Save file
+4. Restart server: npm run dev
+
+### Vercel (Dashboard):
+1. Go to Vercel Dashboard → Your Project
+2. Settings → Environment Variables
+3. Edit MONGODB_URL
+4. Paste the string above
+5. Save
+6. Redeploy: vercel --prod
+
+
+## MongoDB Atlas Network Access:
+
+Make sure to allow connections from anywhere:
+1. MongoDB Atlas → Network Access
+2. Add IP Address → Allow Access from Anywhere (0.0.0.0/0)
+3. Confirm
+
+
+## Test Connection:
+
+After updating, you should see:
+✅ Database connected successfully
+
+No more errors! 🎉

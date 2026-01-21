@@ -42,6 +42,22 @@ uploads
 .git
 .gitignore
 
-# Local development
-index.js
+# Local development files (not needed on Vercel)
+# Root index.js is for local dev only, api/index.js is for Vercel
 test-endpoints-working.js
+00-START-HERE.md
+TESTING_GUIDE.md
+PROJECT_ANALYSIS.md
+COMPLETION_REPORT.md
+DOCUMENTATION_INDEX.md
+FIXES_SUMMARY.md
+QUICK_START.md
+SUMMARY.md
+TESTING_REPORT.md
+FIX_404_ERROR.md
+FIX_MONGODB_CONNECTION.md
+VERCEL_DEPLOY_HINDI.md
+VERCEL_DEPLOYMENT.md
+DEPLOY_COMMANDS.md
+VERCEL_CHANGES_SUMMARY.md
+CORRECT_MONGODB_URL.txt
